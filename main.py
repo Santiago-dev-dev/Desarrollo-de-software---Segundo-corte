@@ -1,35 +1,25 @@
 from fastapi import FastAPI, Body, HTTPException
-import csv
+import json
 
 app = FastAPI()
 
-ARCHIVO = "productos.csv"
+ARCHIVO = "productos.json"
 
+# ------------------ FUNCIONES JSON ------------------
 
 def leer_productos():
-    productos = []
     try:
-        with open(ARCHIVO, newline='', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                productos.append({
-                    "Código": int(row["Código"]),
-                    "Nombre": row["Nombre"],
-                    "Valor": float(row["Valor"]),
-                    "Existencias": int(row["Existencias"])
-                })
+        with open(ARCHIVO, "r", encoding="utf-8") as f:
+            return json.load(f)
     except FileNotFoundError:
         return []
-    return productos
 
 
 def guardar_productos(productos):
-    with open(ARCHIVO, mode='w', newline='', encoding='utf-8') as f:
-        campos = ["Código", "Nombre", "Valor", "Existencias"]
-        writer = csv.DictWriter(f, fieldnames=campos)
-        writer.writeheader()
-        writer.writerows(productos)
+    with open(ARCHIVO, "w", encoding="utf-8") as f:
+        json.dump(productos, f, indent=4, ensure_ascii=False)
 
+# ------------------ ENDPOINTS ------------------
 
 @app.get('/')
 def mensaje():
@@ -100,8 +90,8 @@ def createProducto(nom:str, val:float, exi:int):
 # CREAR PRODUCTO (Body)
 @app.post('/productos_2')
 def createProducto_2(
-    nom:str = Body(), 
-    val:float = Body(), 
+    nom:str = Body(),
+    val:float = Body(),
     exi:int = Body()
 ):
     productos = leer_productos()
